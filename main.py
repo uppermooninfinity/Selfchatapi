@@ -15,8 +15,9 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 
 START_VIDEO = "https://files.catbox.moe/zbu2ql.mp4"
 START_LOG_VIDEO = "https://files.catbox.moe/mr83rj.mp4"
+
 # -------- LOGGER SETTINGS -------- #
-LOGGER_ID = -1003802065017  # <-- apna log group id
+LOGGER_ID = -1003272813374  # <-- put your correct log group/channel ID
 START_LOG_IMAGE = "https://files.catbox.moe/z5tnz1.jpg"
 # --------------------------------- #
 
@@ -40,7 +41,6 @@ CREATE TABLE IF NOT EXISTS memory (
 """)
 conn.commit()
 
-
 # ---------------- LOGGER FUNCTIONS ---------------- #
 
 async def send_boot_log():
@@ -57,9 +57,39 @@ async def send_boot_log():
             ),
             parse_mode="html"
         )
-    except RPCError:
-        pass
+    except Exception as e:
+        print(f"[Logger error] Could not send boot log: {e}")
 
+async def send_user_log(user):
+    try:
+        await bot.send_video(
+            chat_id=LOGGER_ID,
+            video=START_LOG_VIDEO,
+            caption=(
+                f"<blockquote><u><b>» ɴᴇᴡ ᴜsᴇʀ sᴛᴀʀᴛᴇᴅ 🐺</b></u></blockquote>\n\n"
+                f"<b>ɴᴀᴍᴇ :</b> {user.mention}\n"
+                f"<b>ɪᴅ :</b> <code>{user.id}</code>\n"
+                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{user.username if user.username else 'None'}"
+            ),
+            parse_mode="html"
+        )
+    except Exception as e:
+        print(f"[Logger error] Could not send user log: {e}")
+
+async def send_group_add_log(chat):
+    try:
+        await bot.send_video(
+            chat_id=LOGGER_ID,
+            video=START_LOG_VIDEO,
+            caption=(
+                f"<blockquote><u><b>» ʙᴏᴛ ᴀᴅᴅᴇᴅ ɪɴ ɢʀᴏᴜᴘ 🔥</b></u></blockquote>\n\n"
+                f"<b>ɢʀᴏᴜᴘ :</b> {chat.title}\n"
+                f"<b>ɪᴅ :</b> <code>{chat.id}</code>"
+            ),
+            parse_mode="html"
+        )
+    except Exception as e:
+        print(f"[Logger error] Could not send group add log: {e}")
 
 # ---------------- MEMORY ---------------- #
 
@@ -70,7 +100,6 @@ def get_memory(user_id):
         return json.loads(row[0])
     return []
 
-
 def save_memory(user_id, messages):
     cur.execute("""
     INSERT INTO memory (user_id, messages)
@@ -79,7 +108,6 @@ def save_memory(user_id, messages):
     DO UPDATE SET messages = EXCLUDED.messages
     """, (user_id, json.dumps(messages)))
     conn.commit()
-
 
 async def generate_reply(user_id, text):
     memory = get_memory(user_id)
@@ -97,7 +125,6 @@ async def generate_reply(user_id, text):
 
     return reply
 
-
 # ---------------- START COMMAND ---------------- #
 
 @bot.on_message(filters.command("start"))
@@ -105,21 +132,7 @@ async def start_handler(client, message):
     user = message.from_user
 
     # ---- USER START LOG ---- #
-    try:
-        await bot.send_video(
-            chat_id=LOGGER_ID,
-            video=START_LOG_VIDEO,
-            caption=(
-                f"<blockquote><u><b>» ɴᴇᴡ ᴜsᴇʀ sᴛᴀʀᴛᴇᴅ 🐺</b></u></blockquote>\n\n"
-                f"<b>ɴᴀᴍᴇ :</b> {user.mention}\n"
-                f"<b>ɪᴅ :</b> <code>{user.id}</code>\n"
-                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{user.username if user.username else 'None'}"
-            ),
-            parse_mode="html"
-        )
-    except:
-        pass
-    # ------------------------- #
+    await send_user_log(user)
 
     text = (
         f"ʜᴇʏ {user.mention} 👋\n\n"
@@ -147,7 +160,6 @@ async def start_handler(client, message):
         reply_markup=keyboard,
     )
 
-
 # ---------------- GROUP ADD LOG ---------------- #
 
 @bot.on_message(filters.new_chat_members)
@@ -155,20 +167,7 @@ async def bot_added(client, message):
     for member in message.new_chat_members:
         me = await bot.get_me()
         if member.id == me.id:
-            try:
-                await bot.send_video(
-                    chat_id=LOGGER_ID,
-                    video=START_LOG_VIDEO,
-                    caption=(
-                        f"<blockquote><u><b>» ʙᴏᴛ ᴀᴅᴅᴇᴅ ɪɴ ɢʀᴏᴜᴘ 🔥</b></u></blockquote>\n\n"
-                        f"<b>ɢʀᴏᴜᴘ :</b> {message.chat.title}\n"
-                        f"<b>ɪᴅ :</b> <code>{message.chat.id}</code>"
-                    ),
-                    parse_mode="html"
-                )
-            except:
-                pass
-
+            await send_group_add_log(message.chat)
 
 # ---------------- CHAT HANDLER ---------------- #
 
@@ -176,7 +175,6 @@ async def bot_added(client, message):
 async def chat_handler(client, message):
     reply = await generate_reply(message.from_user.id, message.text)
     await message.reply_text(reply)
-
 
 # ---------------- RUN WITH BOOT LOG ---------------- #
 
