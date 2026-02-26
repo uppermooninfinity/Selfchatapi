@@ -1,0 +1,38 @@
+{
+  "name": "GPT Telegram Memory Bot",
+  "description": "GPT-Level Telegram Bot with Permanent PostgreSQL Memory",
+  "repository": "https://github.com/yourusername/yourrepo",
+  "logo": "https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg",
+  "keywords": ["telegram", "gpt", "chatbot"],
+  "env": {
+    "API_ID": {
+      "description": "Telegram API ID",
+      "value": "",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Telegram API Hash",
+      "value": "",
+      "required": true
+    },
+    "BOT_TOKEN": {
+      "description": "Telegram Bot Token",
+      "value": "",
+      "required": true
+    },
+    "BASE_URL": {
+      "description": "Heroku App URL",
+      "required": true
+    },
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API Key",
+      "value": "",
+      "required": true
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:hobby-dev"
+    }
+  ]
+}
