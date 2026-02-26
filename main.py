@@ -3,6 +3,8 @@ import json
 import psycopg2
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors import RPCError
+from pyrogram.idle import idle
 from openai import OpenAI
 
 API_ID = int(os.environ.get("API_ID"))
@@ -12,6 +14,11 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 START_VIDEO = "https://files.catbox.moe/zbu2ql.mp4"
+START_LOG_VIDEO = "https://files.catbox.moe/mr83rj.mp4"
+# -------- LOGGER SETTINGS -------- #
+LOGGER_ID = -1003272813374  # <-- apna log group id
+START_LOG_IMAGE = "https://files.catbox.moe/z5tnz1.jpg"
+# --------------------------------- #
 
 bot = Client(
     "chatbot",
@@ -32,6 +39,26 @@ CREATE TABLE IF NOT EXISTS memory (
 )
 """)
 conn.commit()
+
+
+# ---------------- LOGGER FUNCTIONS ---------------- #
+
+async def send_boot_log():
+    try:
+        me = await bot.get_me()
+        await bot.send_photo(
+            chat_id=LOGGER_ID,
+            photo=START_LOG_IMAGE,
+            caption=(
+                f"<blockquote><u><b>» {me.mention} ʙᴏᴛ ʙᴏᴏᴛᴇᴅ 🚀</b></u></blockquote>\n\n"
+                f"<b>ɪᴅ :</b> <code>{me.id}</code>\n"
+                f"<b>ɴᴀᴍᴇ :</b> {me.first_name}\n"
+                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{me.username}"
+            ),
+            parse_mode="html"
+        )
+    except RPCError:
+        pass
 
 
 # ---------------- MEMORY ---------------- #
@@ -77,6 +104,23 @@ async def generate_reply(user_id, text):
 async def start_handler(client, message):
     user = message.from_user
 
+    # ---- USER START LOG ---- #
+    try:
+        await bot.send_video(
+            chat_id=LOGGER_ID,
+            video=START_LOG_VIDEO,
+            caption=(
+                f"<blockquote><u><b>» ɴᴇᴡ ᴜsᴇʀ sᴛᴀʀᴛᴇᴅ 🐺</b></u></blockquote>\n\n"
+                f"<b>ɴᴀᴍᴇ :</b> {user.mention}\n"
+                f"<b>ɪᴅ :</b> <code>{user.id}</code>\n"
+                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{user.username if user.username else 'None'}"
+            ),
+            parse_mode="html"
+        )
+    except:
+        pass
+    # ------------------------- #
+
     text = (
         f"ʜᴇʏ {user.mention} 👋\n\n"
         "ɪ ᴀᴍ ᴀ ɢᴘᴛ ʟᴇᴠᴇʟ ᴀɪ ᴄʜᴀᴛʙᴏᴛ 🤖✨\n"
@@ -100,8 +144,30 @@ async def start_handler(client, message):
 
     await message.reply(
         f"{text}\n\n<a href='{START_VIDEO}'>๏ ɪ ᴡᴀɴɴᴀ ʙᴇ ʏᴏᴜʀꜱ ♡ 🌷</a>",
-        reply_markup=keyboard
+        reply_markup=keyboard,
     )
+
+
+# ---------------- GROUP ADD LOG ---------------- #
+
+@bot.on_message(filters.new_chat_members)
+async def bot_added(client, message):
+    for member in message.new_chat_members:
+        me = await bot.get_me()
+        if member.id == me.id:
+            try:
+                await bot.send_video(
+                    chat_id=LOGGER_ID,
+                    video=START_LOG_VIDEO,
+                    caption=(
+                        f"<blockquote><u><b>» ʙᴏᴛ ᴀᴅᴅᴇᴅ ɪɴ ɢʀᴏᴜᴘ 🔥</b></u></blockquote>\n\n"
+                        f"<b>ɢʀᴏᴜᴘ :</b> {message.chat.title}\n"
+                        f"<b>ɪᴅ :</b> <code>{message.chat.id}</code>"
+                    ),
+                    parse_mode="html"
+                )
+            except:
+                pass
 
 
 # ---------------- CHAT HANDLER ---------------- #
@@ -112,4 +178,12 @@ async def chat_handler(client, message):
     await message.reply_text(reply)
 
 
-bot.run()
+# ---------------- RUN WITH BOOT LOG ---------------- #
+
+async def main():
+    await bot.start()
+    await send_boot_log()
+    print("Bot Started")
+    await idle()
+
+bot.loop.run_until_complete(main())
