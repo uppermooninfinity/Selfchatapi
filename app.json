@@ -21,13 +21,19 @@
       "required": true
     },
     "BASE_URL": {
-      "description": "Heroku App Url",
+      "description": "Heroku App URL (https://your-app-name.herokuapp.com)",
+      "value": "",
       "required": true
     },
     "OPENAI_API_KEY": {
       "description": "OpenAI API Key",
       "value": "",
       "required": true
+    },
+    "DATABASE_URL": {
+      "description": "PostgreSQL Database URL (Auto-set by Heroku Postgres addon)",
+      "value": "",
+      "required": false
     }
   },
   "addons": [
