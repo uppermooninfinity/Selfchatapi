@@ -6,7 +6,7 @@ from pyrogram.errors import RPCError
 START_VIDEO = "https://files.catbox.moe/zbu2ql.mp4"
 START_LOG_VIDEO = "https://files.catbox.moe/mr83rj.mp4"
 # -------- LOGGER SETTINGS -------- #
-LOGGER_ID = -1003272813374  # <-- apna log group id
+LOGGER_ID = -1003802065017 # <-- apna log group id
 START_LOG_IMAGE = "https://files.catbox.moe/z5tnz1.jpg" # 
 # ============================
 
