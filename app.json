@@ -36,9 +36,4 @@
       "required": false
     }
   },
-  "addons": [
-    {
-      "plan": "heroku-postgresql:hobby-dev"
-    }
-  ]
 }
