@@ -3,4 +3,4 @@ build:
     worker: Dockerfile
 
 run:
-  worker: main.py
+  worker: python main.py
