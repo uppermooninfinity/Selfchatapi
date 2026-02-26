@@ -4,7 +4,7 @@ import psycopg2
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import RPCError
-from pyrogram.idle import idle
+from pyrogram import idle
 from openai import OpenAI
 
 API_ID = int(os.environ.get("API_ID"))
@@ -185,5 +185,7 @@ async def main():
     await send_boot_log()
     print("Bot Started")
     await idle()
+    await bot.stop()
 
-bot.loop.run_until_complete(main())
+if __name__ == "__main__":
+    bot.run(main())
