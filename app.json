@@ -25,8 +25,8 @@
       "value": "",
       "required": true
     },
-    "OPENAI_API_KEY": {
-      "description": "OpenAI API Key",
+    "GROK_API_KEY": {
+      "description": "GROK API Key",
       "value": "",
       "required": true
     },
