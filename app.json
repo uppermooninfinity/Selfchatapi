@@ -25,8 +25,8 @@
       "value": "",
       "required": true
     },
-    "GROK_API_KEY": {
-      "description": "GROK API Key",
+    "GROQ_API_KEY": {
+      "description": "GROQ API KEY",
       "value": "",
       "required": true
     },
