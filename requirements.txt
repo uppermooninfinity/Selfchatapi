@@ -1,6 +1,4 @@
-fastapi
-uvicorn
 pyrogram==2.0.106
 tgcrypto
-openai
 psycopg2-binary
+requests
