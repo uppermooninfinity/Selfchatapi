@@ -1,25 +1,25 @@
 import os
 import json
 import psycopg2
-from pyrogram import Client, filters
+import requests
+from pyrogram import Client, filters, idle
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import RPCError
-from pyrogram import idle
-from openai import OpenAI
+
+# ---------------- ENV VARIABLES ---------------- #
 
 API_ID = int(os.environ.get("API_ID"))
 API_HASH = os.environ.get("API_HASH")
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+GROK_API_KEY = os.environ.get("GROK_API_KEY")
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 START_VIDEO = "https://files.catbox.moe/zbu2ql.mp4"
 START_LOG_VIDEO = "https://files.catbox.moe/mr83rj.mp4"
 
-# -------- LOGGER SETTINGS -------- #
-LOGGER_ID = -1003272813374  # <-- put your correct log group/channel ID
+LOGGER_ID = -1003272813374
 START_LOG_IMAGE = "https://files.catbox.moe/z5tnz1.jpg"
-# --------------------------------- #
+
+# ---------------- BOT INIT ---------------- #
 
 bot = Client(
     "chatbot",
@@ -28,7 +28,7 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
-client_ai = OpenAI(api_key=OPENAI_API_KEY)
+# ---------------- DATABASE ---------------- #
 
 conn = psycopg2.connect(DATABASE_URL, sslmode="require")
 cur = conn.cursor()
@@ -50,15 +50,15 @@ async def send_boot_log():
             chat_id=LOGGER_ID,
             photo=START_LOG_IMAGE,
             caption=(
-                f"<blockquote><u><b>» {me.mention} ʙᴏᴛ ʙᴏᴏᴛᴇᴅ 🚀</b></u></blockquote>\n\n"
-                f"<b>ɪᴅ :</b> <code>{me.id}</code>\n"
-                f"<b>ɴᴀᴍᴇ :</b> {me.first_name}\n"
-                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{me.username}"
+                f"<b>» {me.mention} Bot Booted 🚀</b>\n\n"
+                f"<b>ID:</b> <code>{me.id}</code>\n"
+                f"<b>Name:</b> {me.first_name}\n"
+                f"<b>Username:</b> @{me.username}"
             ),
             parse_mode="html"
         )
     except Exception as e:
-        print(f"[Logger error] Could not send boot log: {e}")
+        print(f"[Logger error] {e}")
 
 async def send_user_log(user):
     try:
@@ -66,15 +66,15 @@ async def send_user_log(user):
             chat_id=LOGGER_ID,
             video=START_LOG_VIDEO,
             caption=(
-                f"<blockquote><u><b>» ɴᴇᴡ ᴜsᴇʀ sᴛᴀʀᴛᴇᴅ 🐺</b></u></blockquote>\n\n"
-                f"<b>ɴᴀᴍᴇ :</b> {user.mention}\n"
-                f"<b>ɪᴅ :</b> <code>{user.id}</code>\n"
-                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{user.username if user.username else 'None'}"
+                f"<b>» New User Started 🐺</b>\n\n"
+                f"<b>Name:</b> {user.mention}\n"
+                f"<b>ID:</b> <code>{user.id}</code>\n"
+                f"<b>Username:</b> @{user.username if user.username else 'None'}"
             ),
             parse_mode="html"
         )
     except Exception as e:
-        print(f"[Logger error] Could not send user log: {e}")
+        print(f"[Logger error] {e}")
 
 async def send_group_add_log(chat):
     try:
@@ -82,14 +82,14 @@ async def send_group_add_log(chat):
             chat_id=LOGGER_ID,
             video=START_LOG_VIDEO,
             caption=(
-                f"<blockquote><u><b>» ʙᴏᴛ ᴀᴅᴅᴇᴅ ɪɴ ɢʀᴏᴜᴘ 🔥</b></u></blockquote>\n\n"
-                f"<b>ɢʀᴏᴜᴘ :</b> {chat.title}\n"
-                f"<b>ɪᴅ :</b> <code>{chat.id}</code>"
+                f"<b>» Bot Added In Group 🔥</b>\n\n"
+                f"<b>Group:</b> {chat.title}\n"
+                f"<b>ID:</b> <code>{chat.id}</code>"
             ),
             parse_mode="html"
         )
     except Exception as e:
-        print(f"[Logger error] Could not send group add log: {e}")
+        print(f"[Logger error] {e}")
 
 # ---------------- MEMORY ---------------- #
 
@@ -109,17 +109,53 @@ def save_memory(user_id, messages):
     """, (user_id, json.dumps(messages)))
     conn.commit()
 
+# ---------------- SPECIAL TRIGGERS ---------------- #
+
+TRIGGER_RESPONSES = {
+    "hi": "Hey there 👋✨ How can I help you today?",
+    "hello": "Hello 🌸✨ Nice to see you here!",
+    "hui": "Huiii 😆 kya chal raha hai?",
+    "hi eivya": "Hii 💖 I'm always here for you!",
+    "jay shree ram": "🚩 Jai Shree Ram 🙏✨",
+    "jai shree ram": "🚩 Jai Shree Ram 🙏✨"
+}
+
+def check_trigger(text):
+    text_lower = text.lower().strip()
+    return TRIGGER_RESPONSES.get(text_lower)
+
+# ---------------- GROK CHAT FUNCTION ---------------- #
+
 async def generate_reply(user_id, text):
     memory = get_memory(user_id)
     memory.append({"role": "user", "content": text})
 
-    response = client_ai.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=memory,
-        temperature=0.7,
-    )
+    headers = {
+        "Authorization": f"Bearer {GROK_API_KEY}",
+        "Content-Type": "application/json"
+    }
 
-    reply = response.choices[0].message.content
+    payload = {
+        "model": "grok-2-latest",
+        "messages": memory,
+        "temperature": 0.7
+    }
+
+    try:
+        response = requests.post(
+            "https://api.x.ai/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
+
+        result = response.json()
+        reply = result["choices"][0]["message"]["content"]
+
+    except Exception as e:
+        print("Grok API Error:", e)
+        reply = "⚠️ AI is temporarily unavailable. Try again later."
+
     memory.append({"role": "assistant", "content": reply})
     save_memory(user_id, memory)
 
@@ -130,34 +166,26 @@ async def generate_reply(user_id, text):
 @bot.on_message(filters.command("start"))
 async def start_handler(client, message):
     user = message.from_user
-
-    # ---- USER START LOG ---- #
     await send_user_log(user)
 
     text = (
-        f"ʜᴇʏ {user.mention} 👋\n\n"
-        "ɪ ᴀᴍ ᴀ ɢᴘᴛ ʟᴇᴠᴇʟ ᴀɪ ᴄʜᴀᴛʙᴏᴛ 🤖✨\n"
-        "ɪ ʀᴇᴍᴇᴍʙᴇʀ ᴏᴜʀ ᴄᴏɴᴠᴇʀꜱᴀᴛɪᴏɴꜱ 🧠💾\n\n"
-        "ᴊᴜꜱᴛ ꜱᴇɴᴅ ᴀ ᴍᴇꜱꜱᴀɢᴇ ᴛᴏ ꜱᴛᴀʀᴛ ᴄʜᴀᴛᴛɪɴɢ 🚀"
+        f"Hey {user.mention} 👋\n\n"
+        "I am a Grok-powered AI chatbot 🤖✨\n"
+        "I remember our conversations 🧠💾\n\n"
+        "Just send a message to start chatting 🚀"
     )
 
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
-            "✦ ᴧᴅᴅ ϻє ᴛσ ɢʀσᴜᴘ ➕👥✨",
+            "➕ Add Me To Group",
             url=f"https://t.me/{(await client.get_me()).username}?startgroup=true"
-        )],
-        [
-            InlineKeyboardButton("✦ ʟσɢꜱ 📜✨", url=f"https://t.me/yukieee_03"),
-            InlineKeyboardButton("✦ σᴡηєʀ 👑✨", url=f"https://t.me/cyber_github")
-        ],
-        [
-            InlineKeyboardButton("✦ ˹ ɪɴꜰɪɴɪᴛʏ ✘ ɴᴇᴛᴡᴏʀᴋ˼ 🎧  🚫🔥", url=f"https://t.me/dark_musictm")
-        ]
+        )]
     ])
 
     await message.reply(
-        f"{text}\n\n<a href='{START_VIDEO}'>๏ ɪ ᴡᴀɴɴᴀ ʙᴇ ʏᴏᴜʀꜱ ♡ 🌷</a>",
+        f"{text}\n\n<a href='{START_VIDEO}'>Click Here 💫</a>",
         reply_markup=keyboard,
+        parse_mode="html"
     )
 
 # ---------------- GROUP ADD LOG ---------------- #
@@ -173,10 +201,17 @@ async def bot_added(client, message):
 
 @bot.on_message(filters.text & ~filters.command(["start"]))
 async def chat_handler(client, message):
+
+    trigger_reply = check_trigger(message.text)
+
+    if trigger_reply:
+        await message.reply_text(trigger_reply)
+        return
+
     reply = await generate_reply(message.from_user.id, message.text)
     await message.reply_text(reply)
 
-# ---------------- RUN WITH BOOT LOG ---------------- #
+# ---------------- RUN ---------------- #
 
 async def main():
     await bot.start()
