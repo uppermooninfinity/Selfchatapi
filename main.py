@@ -169,23 +169,26 @@ async def start_handler(client, message):
     await send_user_log(user)
 
     text = (
-        f"Hey {user.mention} 👋\n\n"
-        "I am a Grok-powered AI chatbot 🤖✨\n"
-        "I remember our conversations 🧠💾\n\n"
-        "Just send a message to start chatting 🚀"
+        f"<blockquote>ʜᴇʏ {message.from_user.mention} 👋</blockquote>\n\n"
+         "<blockquote>ɪ ᴀᴍ ᴀ ɢʀᴏǫ-ᴘᴏᴡᴇʀᴇᴅ ᴀɪ ᴄʜᴀᴛʙᴏᴛ ⚡\n"
+         "ʙᴜɪʟᴛ ғᴏʀ sᴍᴀʀᴛ, ғᴀsᴛ ᴀɴᴅ ᴀᴄᴄᴜʀᴀᴛᴇ ʀᴇsᴘᴏɴsᴇs 💡</blockquote>\n\n"
+         "<blockquote>✨ ᴀsᴋ ᴍᴇ ᴀɴʏᴛʜɪɴɢ — ᴄᴏᴅɪɴɢ, ᴋɴᴏᴡʟᴇᴅɢᴇ, ɢᴇɴᴇʀᴀʟ ᴄʜᴀᴛs\n"
+         "🚀 ᴊᴜsᴛ sᴇɴᴅ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ sᴛᴀʀᴛ ᴄʜᴀᴛᴛɪɴɢ\n"
+         "🔥 ғᴀsᴛ ʀᴇᴘʟɪᴇs • sᴍᴀʀᴛ ʟᴏɢɪᴄ • ᴘᴏᴡᴇʀғᴜʟ ᴀɪ</blockquote>\n\n"
+         "<blockquote>ʟᴇᴛ’s ᴄʀᴇᴀᴛᴇ sᴏᴍᴇᴛʜɪɴɢ ᴀᴍᴀᴢɪɴɢ ᴛᴏɢᴇᴛʜᴇʀ 🩵</blockquote>\n"
+         "</blockquote>🛡️ ɪ ᴄᴀɴ sᴍᴀʀᴛʟʏ ᴍᴏɴɪᴛᴏʀ ᴀɴᴅ ᴘʀᴏᴛᴇᴄᴛ ʏᴏᴜʀ ɢʀᴏᴜᴘ ᴄʜᴀᴛ ғʀᴏᴍ ɴsғᴡ ᴀɴᴅ ᴜɴᴡᴀɴᴛᴇᴅ ᴄᴏɴᴛᴇɴᴛ 🌷✨</blockquote>"
     )
 
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
-            "➕ Add Me To Group",
+            "ღ ᴀᴅᴅ ᴍᴇ ღ",
             url=f"https://t.me/{(await client.get_me()).username}?startgroup=true"
         )]
     ])
 
     await message.reply(
-        f"{text}\n\n<a href='{START_VIDEO}'>Click Here 💫</a>",
+        f"{text}\n\n<a href='{START_VIDEO}'>ᴍᴀᴅᴇ ᴡɪᴛʜ ʟᴏᴠᴇ ғᴏʀ ᴍʏ ᴀᴍᴀᴢɪɴɢ ᴜsᴇʀs 🩵✨</a>",
         reply_markup=keyboard,
-        parse_mode="html"
     )
 
 # ---------------- GROUP ADD LOG ---------------- #
