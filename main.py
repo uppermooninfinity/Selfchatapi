@@ -13,8 +13,8 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 GROK_API_KEY = os.environ.get("GROK_API_KEY")
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-START_VIDEO = "https://files.catbox.moe/zbu2ql.mp4"
-START_LOG_VIDEO = "https://files.catbox.moe/mr83rj.mp4"
+START_VIDEO = "https://files.catbox.moe/ehcs2v.mp4"
+START_LOG_VIDEO = "https://files.catbox.moe/ehcs2v.mp4"
 
 LOGGER_ID = -1003272813374
 START_LOG_IMAGE = "https://files.catbox.moe/z5tnz1.jpg"
